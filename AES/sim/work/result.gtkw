@@ -1,0 +1,26 @@
+[*]
+[*] GTKWave Analyzer v3.3.118 (w)1999-2023 BSI
+[*] Thu Jun 12 13:33:04 2025
+[*]
+[dumpfile] "C:\Users\Posimsetty\Desktop\AES\sim\work\result.ghw"
+[dumpfile_mtime] "Thu Jun 12 13:30:53 2025"
+[dumpfile_size] 592
+[savefile] "C:\Users\Posimsetty\Desktop\AES\sim\work\result.gtkw"
+[timestart] 0
+[size] 2560 1369
+[pos] 2551 -9
+*-22.915071 58480000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.tb.
+[treeopen] top.tb.dut_s_box.
+[sst_width] 263
+[signals_width] 206
+[sst_expanded] 1
+[sst_vpaned_height] 425
+@24
+#{top.tb.byte_in[7:0]} top.tb.byte_in[7] top.tb.byte_in[6] top.tb.byte_in[5] top.tb.byte_in[4] top.tb.byte_in[3] top.tb.byte_in[2] top.tb.byte_in[1] top.tb.byte_in[0]
+@22
+#{top.tb.byte_out[7:0]} top.tb.byte_out[7] top.tb.byte_out[6] top.tb.byte_out[5] top.tb.byte_out[4] top.tb.byte_out[3] top.tb.byte_out[2] top.tb.byte_out[1] top.tb.byte_out[0]
+#{top.tb.dut_s_box.byte_out[7:0]} top.tb.dut_s_box.byte_out[7] top.tb.dut_s_box.byte_out[6] top.tb.dut_s_box.byte_out[5] top.tb.dut_s_box.byte_out[4] top.tb.dut_s_box.byte_out[3] top.tb.dut_s_box.byte_out[2] top.tb.dut_s_box.byte_out[1] top.tb.dut_s_box.byte_out[0]
+[pattern_trace] 1
+[pattern_trace] 0
