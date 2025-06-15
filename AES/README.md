@@ -1,14 +1,1 @@
-### compiled vhdl library
-*.cf
-
-### simulation outputs
-*.ghw
-
-### object files 
-*.o 
-
-### executable files 
-*.exe 
-
-### text files
-*.lst 
+Implementing a 128-bit AES 

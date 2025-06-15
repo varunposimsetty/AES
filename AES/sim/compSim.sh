@@ -9,17 +9,15 @@ mkdir -p $WORK_DIR
 
 # importing source files
 ghdl -i --workdir=$WORK_DIR ../src/sub_bytes.vhd
+ghdl -i --workdir=$WORK_DIR ../src/shift_rows.vhd
 ghdl -i --workdir=$WORK_DIR ./tb_sub_bytes.vhd
 
+
 # building simulation files
-ghdl -m --workdir=$WORK_DIR --ieee=synopsys tb   # synopsis compatibility needed for the spi_master?? :(
+ghdl -m --workdir=$WORK_DIR tb
 
 # running the simulation
-start=`date +%s`
-ghdl -r -fsynopsys --workdir=$WORK_DIR tb --wave=$WORK_DIR/$WAVE_FILE --stop-time=350ms --ieee-asserts=disable-at-0 
-end=`date +%s`
-runtime=$((end-start))
-echo "Simulation time: ${runtime}s"
+ghdl -r --workdir=$WORK_DIR tb --wave=$WORK_DIR/$WAVE_FILE --stop-time=1ms
 
 # open gtkwave with project with new waveform if project exists, if not then just open the waveform in new project
 if [ -f $WORK_DIR/$GTKPROJ_FILE ]; then
