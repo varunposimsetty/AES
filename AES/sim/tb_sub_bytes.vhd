@@ -10,16 +10,16 @@ architecture bhv of tb is
     signal state_out : std_ulogic_vector(127 downto 0);
 
     begin 
-    DUT_S_BOX : entity work.shift_rows(RTL) 
+    DUT_S_BOX : entity work.move_columns(RTL) 
     port map(
-        i_row_state_in => state_in,
-        o_row_state_out => state_out
+        i_column_state_in => state_in,
+        o_column_state_out => state_out
     );
 
     proc_tb : process is 
     begin 
         wait for 10 ns;
-        state_in <= x"0123456789ABCDEF0123456789ABCDEF";
+        state_in <= x"db135345f20a225c01010101c2c2c2c2";
         wait for 20 ns;
         state_in <= x"FEDCBA9876543210FEDCBA9876543210";
         wait for 30 ns;

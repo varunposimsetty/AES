@@ -13,35 +13,35 @@ architecture RTL of move_columns is
     type tColumns is array(0 to 3) of std_ulogic_vector(7 downto 0);
     
     constant fixed_row_0 : tColumns := (
-        0 => x"02";
-        1 => x"03";
-        2 => x"01";
+        0 => x"02",
+        1 => x"03",
+        2 => x"01",
         3 => x"01"
     );
     
     constant fixed_row_1 : tColumns := (
-        0 => x"01" ;
-        1 => x"02";
-        2 => x"03";
+        0 => x"01" ,
+        1 => x"02",
+        2 => x"03",
         3 => x"01"
     );
     
     constant fixed_row_2 : tColumns := (
-        0 => x"01";
-        1 => x"01";
-        2 => x"02";
+        0 => x"01",
+        1 => x"01",
+        2 => x"02",
         3 => x"03"
     );
     
     constant fixed_row_3 :tColumns := (
-        0 => x"03"; 
-        1 => x"01";
-        2 => x"01";
+        0 => x"03", 
+        1 => x"01",
+        2 => x"01",
         3 => x"02"
     );
 
     -- Function for multiplication 
-   function row_operation(a : tColumns; b : tColumns) return std_ulogic_vector(7 downto 0) is
+   function row_operation(a : tColumns; b : tColumns) return std_ulogic_vector is
         variable result : std_ulogic_vector(7 downto 0) := (others => '0');
         variable temp_result : tColumns := (others => (others => '0'));
         variable shifted_result : unsigned(7 downto 0) := (others => '0');
@@ -71,12 +71,12 @@ end function;
 
 begin 
     process(i_column_state_in)
+        variable column_0 : tColumns := (others => (others => '0'));
+        variable column_1 : tColumns := (others => (others => '0'));
+        variable column_2 : tColumns := (others => (others => '0'));
+        variable column_3 : tColumns := (others => (others => '0'));
+    
         begin 
-        variable column_0 : tColumns := (others => '0');
-        variable column_1 : tColumns := (others => '0');
-        variable column_2 : tColumns := (others => '0');
-        variable column_3 : tColumns := (others => '0');
-        
         column_0(0) := i_column_state_in(127 downto 120);
         column_0(1) := i_column_state_in(95 downto 88);
         column_0(2) := i_column_state_in(63 downto 56);

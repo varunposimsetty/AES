@@ -26,7 +26,7 @@ begin
         row_3 <= i_row_state_in(31 downto 0);
     end process;
     shift_row_1 <= row_1(23 downto 0) & row_1(31 downto 24);
-    shift_row_2 <= row_2(15 downto 0) & row_1(31 downto 16);
+    shift_row_2 <= row_2(15 downto 0) & row_2(31 downto 16);
     shift_row_3 <= row_3(7 downto 0) & row_3(31 downto 8); 
     o_row_state_out <=  row_0 & shift_row_1 & shift_row_2 & shift_row_3;
 end architecture RTL;
