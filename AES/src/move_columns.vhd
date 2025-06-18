@@ -11,6 +11,14 @@ end entity move_columns;
 
 architecture RTL of move_columns is 
     type tColumns is array(0 to 3) of std_ulogic_vector(7 downto 0);
+    signal c_0 : tColumns := (others => (others => '0'));
+    signal c_1 : tColumns := (others => (others => '0'));
+    signal c_2 : tColumns := (others => (others => '0'));
+    signal c_3 : tColumns := (others => (others => '0'));
+    signal r : std_ulogic_vector(7 downto 0) := (others => '0');
+    signal r_1 : std_ulogic_vector(7 downto 0) := (others => '0');
+    signal r_2 : std_ulogic_vector(7 downto 0) := (others => '0');
+    signal r_3 : std_ulogic_vector(7 downto 0) := (others => '0');
     
     constant fixed_row_0 : tColumns := (
         0 => x"02",
@@ -45,27 +53,28 @@ architecture RTL of move_columns is
         variable result : std_ulogic_vector(7 downto 0) := (others => '0');
         variable temp_result : tColumns := (others => (others => '0'));
         variable shifted_result : unsigned(7 downto 0) := (others => '0');
+        
         begin
         for i in 0 to 3 loop
             if a(i) = x"01" then
                 temp_result(i) := b(i);
             elsif a(i) = x"02" then
-                shifted_result := unsigned(b(i)) sll 1;
-                if b(i)(7) = '1' then
-                    shifted_result := shifted_result xor x"1B";
+                if (b(i)(7) = '1') then 
+                    shifted_result := (unsigned(b(i)) sll 1) xor x"1B";
+                else 
+                    shifted_result := unsigned(b(i)) sll 1;
                 end if;
                 temp_result(i) := std_ulogic_vector(shifted_result);
             elsif a(i) = x"03" then
-                shifted_result := unsigned(b(i)) sll 1;
-                if b(i)(7) = '1' then
-                    shifted_result := shifted_result xor x"1B";
+                if (b(i)(7) = '1') then 
+                    shifted_result := (unsigned(b(i)) sll 1) xor x"1B";
+                else 
+                    shifted_result := unsigned(b(i)) sll 1;
                 end if;
-                temp_result(i) := std_ulogic_vector(shifted_result) xor b(i);
-            else
-                temp_result(i) := (others => '0');
+                temp_result(i) := std_ulogic_vector(shifted_result xor unsigned(b(i)));
         end if;
     end loop;
-    result := temp_result(0) xor temp_result(1) xor temp_result(2) xor temp_result(3);
+    result := std_ulogic_vector(unsigned(temp_result(0)) xor unsigned(temp_result(1)) xor unsigned(temp_result(2)) xor unsigned(temp_result(3)));
     return result;
 end function;
 
@@ -78,29 +87,49 @@ begin
     
         begin 
         column_0(0) := i_column_state_in(127 downto 120);
-        column_0(1) := i_column_state_in(95 downto 88);
-        column_0(2) := i_column_state_in(63 downto 56);
-        column_0(3) := i_column_state_in(31 downto 24);
+        column_0(1) := i_column_state_in(119 downto 112);
+        column_0(2) := i_column_state_in(111 downto 104);
+        column_0(3) := i_column_state_in(103 downto 96);
+        c_0(0) <= i_column_state_in(127 downto 120);
+        c_0(1) <= i_column_state_in(119 downto 112);
+        c_0(2) <= i_column_state_in(111 downto 104);
+        c_0(3) <= i_column_state_in(103 downto 96);
         
-        column_1(0) := i_column_state_in(119 downto 112);
+        column_1(0) := i_column_state_in(95 downto 88);
         column_1(1) := i_column_state_in(87 downto 80);
-        column_1(2) := i_column_state_in(55 downto 48);
-        column_1(3) := i_column_state_in(23 downto 16);
+        column_1(2) := i_column_state_in(79 downto 72);
+        column_1(3) := i_column_state_in(71 downto 64);
+        c_1(0) <= i_column_state_in(95 downto 88);
+        c_1(1) <= i_column_state_in(87 downto 80);
+        c_1(2) <= i_column_state_in(79 downto 72);
+        c_1(3) <= i_column_state_in(71 downto 64);
 
-        column_2(0) := i_column_state_in(111 downto 104);
-        column_2(1) := i_column_state_in(79 downto 72);
+        column_2(0) := i_column_state_in(63 downto 56);
+        column_2(1) := i_column_state_in(55 downto 48);
         column_2(2) := i_column_state_in(47 downto 40);
-        column_2(3) := i_column_state_in(15 downto 8);
+        column_2(3) := i_column_state_in(39 downto 32);
+        c_2(0) <= i_column_state_in(63 downto 56);
+        c_2(1) <= i_column_state_in(55 downto 48);
+        c_2(2) <= i_column_state_in(47 downto 40);
+        c_2(3) <= i_column_state_in(39 downto 32);
 
-        column_3(0) := i_column_state_in(103 downto 96);
-        column_3(1) := i_column_state_in(71 downto 64);
-        column_3(2) := i_column_state_in(39 downto 32);
+        column_3(0) := i_column_state_in(31 downto 24);
+        column_3(1) := i_column_state_in(23 downto 16);
+        column_3(2) := i_column_state_in(15 downto 8);
         column_3(3) := i_column_state_in(7 downto 0);
+        c_3(0) <= i_column_state_in(31 downto 24);
+        c_3(1) <= i_column_state_in(23 downto 16);
+        c_3(2) <= i_column_state_in(15 downto 8);
+        c_3(3) <= i_column_state_in(7 downto 0);
 
         o_column_state_out(127 downto 120) <= row_operation(fixed_row_0,column_0);
+        r <= row_operation(fixed_row_0,column_0);
         o_column_state_out(119 downto 112) <= row_operation(fixed_row_1,column_0);
+        r_1 <= row_operation(fixed_row_1,column_0);
         o_column_state_out(111 downto 104) <= row_operation(fixed_row_2,column_0);
+        r_2 <= row_operation(fixed_row_2,column_0);
         o_column_state_out(103 downto 96) <= row_operation(fixed_row_3,column_0);
+        r_3 <= row_operation(fixed_row_3,column_0);
         o_column_state_out(95 downto 88) <= row_operation(fixed_row_0,column_1);
         o_column_state_out(87 downto 80) <= row_operation(fixed_row_1,column_1);
         o_column_state_out(79 downto 72) <= row_operation(fixed_row_2,column_1);
