@@ -10,7 +10,7 @@ entity key_expansion is
     );
     port (
         i_key          : in  std_ulogic_vector(key_size-1 downto 0);
-        o_expanded_key : out std_ulogic_vector(((rounds+1)*128)-1 downto 0)
+        o_expanded_key : out std_ulogic_vector(1407 downto 0)
     );
 end entity key_expansion;
 
@@ -18,34 +18,22 @@ architecture RTL of key_expansion is
     type tWord is array(0 to 3) of std_ulogic_vector(7 downto 0);
     type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(127 downto 0);
 
-    -- Expanded key storage
-    signal expanded_key : tExpandedKeyBank := (others => (others => '0'));
-
-    -- Round Constants
-    type tRoundConstants is array(0 to 13) of std_ulogic_vector(31 downto 0);
-    constant round_constant : tRoundConstants := (
-        x"01000000", x"02000000", x"04000000", x"08000000",
-        x"10000000", x"20000000", x"40000000", x"80000000",
-        x"1B000000", x"36000000", x"6C000000", x"D8000000",
-        x"AB000000", x"4D000000"
-    );
-
     function s_box_function(input_byte : std_ulogic_vector(7 downto 0)) return std_ulogic_vector is
         type s_box_array_type is array(0 to 255) of std_ulogic_vector(7 downto 0);
         constant SBoxArray : s_box_array_type := (
-                0  => x"63",  1  => x"7C",  2  => x"77",  3  => x"7B",  4  => x"F2",  5  => x"6B",  6  => x"6F",  7  => x"C5",
-                8  => x"30",  9  => x"01",  10 => x"67",  11 => x"2B",  12 => x"FE",  13 => x"D7",  14 => x"AB",  15 => x"76",
-                16 => x"CA",  17 => x"82",  18 => x"C9",  19 => x"7D",  20 => x"FA",  21 => x"59",  22 => x"47",  23 => x"F0",
-                24 => x"AD",  25 => x"D4",  26 => x"A2",  27 => x"AF",  28 => x"9C",  29 => x"A4",  30 => x"72",  31 => x"C0",
-                32 => x"B7",  33 => x"FD",  34 => x"93",  35 => x"26",  36 => x"36",  37 => x"3F",  38 => x"F7",  39 => x"CC",
-                40 => x"34",  41 => x"A5",  42 => x"E5",  43 => x"F1",  44 => x"71",  45 => x"D8",  46 => x"31",  47 => x"15",
-                48 => x"04",  49 => x"C7",  50 => x"23",  51 => x"C3",  52 => x"18",  53 => x"96",  54 => x"05",  55 => x"9A",
-                56 => x"07",  57 => x"12",  58 => x"80",  59 => x"E2",  60 => x"EB",  61 => x"27",  62 => x"B2",  63 => x"75",
-                64 => x"09",  65 => x"83",  66 => x"2C",  67 => x"1A",  68 => x"1B",  69 => x"6E",  70 => x"5A",  71 => x"A0",
-                72 => x"52",  73 => x"3B",  74 => x"D6",  75 => x"B3",  76 => x"29",  77 => x"E3",  78 => x"2F",  79 => x"84",
-                80 => x"53",  81 => x"D1",  82 => x"00",  83 => x"ED",  84 => x"20",  85 => x"FC",  86 => x"B1",  87 => x"5B",
-                88 => x"6A",  89 => x"CB",  90 => x"BE",  91 => x"39",  92 => x"4A",  93 => x"4C",  94 => x"58",  95 => x"CF",
-                96 => x"D0",  97 => x"EF",  98 => x"AA",  99 => x"FB",  100 => x"43",  101 => x"4D",  102 => x"33",  103 => x"85",
+                0  => x"63",   1  => x"7C",   2  => x"77",   3  => x"7B",   4  => x"F2",   5  => x"6B",   6  => x"6F",   7  => x"C5",
+                8  => x"30",   9  => x"01",   10 => x"67",   11 => x"2B",   12 => x"FE",   13 => x"D7",   14 => x"AB",   15 => x"76",
+                16 => x"CA",   17 => x"82",   18 => x"C9",   19 => x"7D",   20 => x"FA",   21 => x"59",   22 => x"47",   23 => x"F0",
+                24 => x"AD",   25 => x"D4",   26 => x"A2",   27 => x"AF",   28 => x"9C",   29 => x"A4",   30 => x"72",   31 => x"C0",
+                32 => x"B7",   33 => x"FD",   34 => x"93",   35 => x"26",   36 => x"36",   37 => x"3F",   38 => x"F7",   39 => x"CC",
+                40 => x"34",   41 => x"A5",   42 => x"E5",   43 => x"F1",   44 => x"71",   45 => x"D8",   46 => x"31",   47 => x"15",
+                48 => x"04",   49 => x"C7",   50 => x"23",   51 => x"C3",   52 => x"18",   53 => x"96",   54 => x"05",   55 => x"9A",
+                56 => x"07",   57 => x"12",   58 => x"80",   59 => x"E2",   60 => x"EB",   61 => x"27",   62 => x"B2",   63 => x"75",
+                64 => x"09",   65 => x"83",   66 => x"2C",   67 => x"1A",   68 => x"1B",   69 => x"6E",   70 => x"5A",   71 => x"A0",
+                72 => x"52",   73 => x"3B",   74 => x"D6",   75 => x"B3",   76 => x"29",   77 => x"E3",   78 => x"2F",   79 => x"84",
+                80 => x"53",   81 => x"D1",   82 => x"00",   83 => x"ED",   84 => x"20",   85 => x"FC",   86 => x"B1",   87 => x"5B",
+                88 => x"6A",   89 => x"CB",   90 => x"BE",   91 => x"39",   92 => x"4A",   93 => x"4C",   94 => x"58",   95 => x"CF",
+                96 => x"D0",   97 => x"EF",   98 => x"AA",   99 => x"FB",   100 => x"43",  101 => x"4D",  102 => x"33",  103 => x"85",
                 104 => x"45",  105 => x"F9",  106 => x"02",  107 => x"7F",  108 => x"50",  109 => x"3C",  110 => x"9F",  111 => x"A8",
                 112 => x"51",  113 => x"A3",  114 => x"40",  115 => x"8F",  116 => x"92",  117 => x"9D",  118 => x"38",  119 => x"F5",
                 120 => x"BC",  121 => x"B6",  122 => x"DA",  123 => x"21",  124 => x"10",  125 => x"FF",  126 => x"F3",  127 => x"D2",
@@ -65,13 +53,20 @@ architecture RTL of key_expansion is
                 232 => x"9B",  233 => x"1E",  234 => x"87",  235 => x"E9",  236 => x"CE",  237 => x"55",  238 => x"28",  239 => x"DF",
                 240 => x"8C",  241 => x"A1",  242 => x"89",  243 => x"0D",  244 => x"BF",  245 => x"E6",  246 => x"42",  247 => x"68",
                 248 => x"41",  249 => x"99",  250 => x"2D",  251 => x"0F",  252 => x"B0",  253 => x"54",  254 => x"BB",  255 => x"16",
-            others => (others => '0')
-        );
+            others => (others => '0'));
     begin
         return SBoxArray(to_integer(unsigned(input_byte)));
     end function;
 
-    -- Rotate Word 
+        -- Round Constants
+    type tRoundConstants is array(0 to 13) of std_ulogic_vector(31 downto 0);
+    constant round_constant : tRoundConstants := (
+        x"01000000", x"02000000", x"04000000", x"08000000",
+        x"10000000", x"20000000", x"40000000", x"80000000",
+        x"1B000000", x"36000000", x"6C000000", x"D8000000",
+        x"AB000000", x"4D000000"
+    );
+
     function rotate_word(word_in : tWord) return tWord is
         variable rotated_word : tWord := (others => (others => '0'));
     begin
@@ -82,7 +77,6 @@ architecture RTL of key_expansion is
         return rotated_word;
     end function;
 
-    -- Substitute Word 
     function substitute_word(word_in : tWord) return tWord is
         variable substituted_word : tWord := (others => (others => '0'));
     begin
@@ -92,45 +86,27 @@ architecture RTL of key_expansion is
         return substituted_word;
     end function;
 
-begin
-    process(i_key)
-        variable temp_word : tWord := (others => (others => '0'));
-        variable current_word : tWord;
-        variable round_key_word : std_ulogic_vector(31 downto 0);
-        variable temp_1, temp_2, temp_3, temp_4 : std_ulogic_vector(31 downto 0);
-        variable word_array : tWord := (others => (others => '0'));
+    -- SIGNALS 
+    signal expanded_key : tExpandedKeyBank := (others => (others => '0'));
+    -- TEST SIGNALS
+    signal word_array_test : tWord := (others => (others => '0'));
+    signal expanded_key_test : std_ulogic_vector(127 downto 0) := (others =>  '0');
+
     begin
-       -- first round key 
-        if (key_size = 128) then 
-            expanded_key(0) <= i_key;
-        elsif(key_size = 196) then 
-            expanded_key(0) <= i_key(191 downto 64);
-        elsif(key_size = 256) then 
-            expanded_key(0) <= i_key(255 downto 128);
-        end if;
-
-        -- Generating the remaining round keys
-        for i in 0 to rounds - 1 loop
-            word_array(0) := expanded_key(i)(31 downto 24); 
-            word_array(1) := expanded_key(i)(23 downto 16);
-            word_array(2) := expanded_key(i)(15 downto 8);
-            word_array(3) := expanded_key(i)(7 downto 0);  
-
-            temp_word := rotate_word(word_array);
-            temp_word := substitute_word(temp_word);
-            temp_word(0) := std_ulogic_vector(unsigned(temp_word(0)) xor unsigned(round_constant(i)(31 downto 24)));
-            round_key_word := temp_word(0) & temp_word(1) & temp_word(2) & temp_word(3);
-            temp_1 := std_ulogic_vector(unsigned(expanded_key(i)(127 downto 96)) xor unsigned(round_key_word));
-            temp_2 := std_ulogic_vector(unsigned(temp_1) xor unsigned(expanded_key(i)(95 downto 64)));
-            temp_3 := std_ulogic_vector(unsigned(temp_2) xor unsigned(expanded_key(i)(63 downto 32)));
-            temp_4 := std_ulogic_vector(unsigned(temp_3) xor unsigned(expanded_key(i)(31 downto 0)));
-            expanded_key(i+1) <= temp_1 & temp_2 & temp_3 & temp_4;
-        end loop;
-
-        -- Combining all round keys into a single expanded key
-        for i in 0 to rounds loop
-            o_expanded_key((i+1)*128-1 downto i*128) <= expanded_key(i);
-        end loop;
-    end process;
-
+        process(i_key)
+            variable word_array : tWord := (others => (others => '0'));
+            variable temp_word : tWord := (others => (others => '0'));
+            variable round_key_word : std_ulogic_vector(31 downto 0);
+            variable temp_1, temp_2, temp_3, temp_4 : std_ulogic_vector(31 downto 0);
+            begin
+                for i in 0 to rounds loop 
+                    if (i = 0) then 
+                        expanded_key(i) <= i_key;
+                    else 
+                        expanded_key(i) <= (others => '1');
+                        expanded_key_test <= expanded_key(i-1);
+                    end if;
+                end loop;
+        end process;
 end architecture RTL;
+
