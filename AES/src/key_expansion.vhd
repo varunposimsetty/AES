@@ -71,19 +71,12 @@ architecture RTL of key_expansion is
 
 
     signal expanded_key : tExpandedKeyBank := (others => (others => '0'));
-    signal expanded_key_chan : tExpandedKeyBank := (others => (others => '0'));
     signal expanded_key_check : tExpandedKeyBank := (others => (others => '0'));
     
     begin 
 
     process(i_key)
     variable expanded_key_var : tExpandedKeyBank := (others => (others => '0'));
-    
-    variable expanded_key_chan_var : tExpandedKeyBank := (others => (others => '0'));
-    variable expanded_key_xor_var : tExpandedKeyBank := (others => (others => '0'));
-    variable expanded_var : tExpandedKeyBank := (others => (others => '0'));
-    
-
     variable rot_var : std_ulogic_vector(31 downto 0) := (others => '0');
     variable sub_var : std_ulogic_vector(31 downto 0) := (others => '0');
     variable round_var : std_ulogic_vector(31 downto 0) := (others => '0');
@@ -96,7 +89,6 @@ architecture RTL of key_expansion is
         for i in 0 to rounds loop 
             if (i = 0) then
                 expanded_key_var(i) := i_key;
-                expanded_key_chan_var(i) := i_key;
             elsif (i /= 0) then 
                 rot_var := expanded_key_var(i-1)(23 downto 0) & expanded_key_var(i-1)(31 downto 24);
                 sub_var := s_box_function(rot_var(31 downto 24)) & s_box_function(rot_var(23 downto 16)) & s_box_function(rot_var(15 downto 8)) & s_box_function(rot_var(7 downto 0)); 
@@ -105,19 +97,11 @@ architecture RTL of key_expansion is
                 word_1 := std_ulogic_vector(unsigned(word_0) xor unsigned(expanded_key_var(i-1)(95 downto 64)));
                 word_2 := std_ulogic_vector(unsigned(word_1) xor unsigned(expanded_key_var(i-1)(63 downto 32)));
                 word_3 := std_ulogic_vector(unsigned(word_2) xor unsigned(expanded_key_var(i-1)(31 downto 0)));
-
-
-                expanded_key_var(i)(31 downto 0) := rot_var;  
-                expanded_key_chan_var(i)(31 downto 0) := sub_var;
                 expanded_key_var(i) := word_0 & word_1 & word_2 & word_3;
-                
             end if;
+            o_expanded_key((i+1)*128-1 downto i*128) <= expanded_key_var(i);
         end loop;
         expanded_key <= expanded_key_var;
-        expanded_key_chan <= expanded_key_chan_var;
-        expanded_key_check <= expanded_key_var;
-
-        
-    end process;
+     end process;
 end architecture RTL;
             
