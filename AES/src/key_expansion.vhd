@@ -88,7 +88,13 @@ architecture RTL of key_expansion is
     begin 
         for i in 0 to rounds loop 
             if (i = 0) then
-                expanded_key_var(i) := i_key;
+                if(key_size = 128) then 
+                    expanded_key_var(i) := i_key;
+                elsif(key_size = 196) then 
+                    expanded_key_var(i) := i_key(191 downto 64);
+                elsif(key_size = 256) then 
+                    expanded_key_var(i) := i_key(255 downto 128);
+                end if;
             elsif (i /= 0) then 
                 rot_var := expanded_key_var(i-1)(23 downto 0) & expanded_key_var(i-1)(31 downto 24);
                 sub_var := s_box_function(rot_var(31 downto 24)) & s_box_function(rot_var(23 downto 16)) & s_box_function(rot_var(15 downto 8)) & s_box_function(rot_var(7 downto 0)); 

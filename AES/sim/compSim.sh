@@ -8,6 +8,7 @@ GTKPROJ_FILE=result.gtkw
 mkdir -p $WORK_DIR
 
 # importing source files
+ghdl -i --workdir=$WORK_DIR ../src/unitAES.vhd
 ghdl -i --workdir=$WORK_DIR ../src/sub_bytes.vhd
 ghdl -i --workdir=$WORK_DIR ../src/shift_rows.vhd
 ghdl -i --workdir=$WORK_DIR ../src/move_columns.vhd

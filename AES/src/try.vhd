@@ -271,3 +271,25 @@ architecture RTL of key_expansion is
         end process;
 end architecture RTL;
 
+
+-- 
+current_key_var := expanded_key((count+1)*128-1 downto count*128);
+            case count is 
+                when 0 =>
+                    current_state <= i_data_in xor current_key_var;
+                when 10 => 
+                    count := 0;
+                when others => 
+                    null;
+            end case;
+
+for count in 0 to rounds loop
+            current_key_var := expanded_key(((count+1)*128)-1 downto count*128);
+            c <= current_key_var;
+            if (count = 0) then 
+                current_state_var := current_key_var xor i_data_in;
+            else 
+                null;
+            end if;
+            current_state <= current_state_var;
+        end loop;
