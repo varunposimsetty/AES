@@ -71,7 +71,6 @@ architecture RTL of key_expansion is
 
 
     signal expanded_key : tExpandedKeyBank := (others => (others => '0'));
-    signal expanded_key_check : tExpandedKeyBank := (others => (others => '0'));
     
     begin 
 

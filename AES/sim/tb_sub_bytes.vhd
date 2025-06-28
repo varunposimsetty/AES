@@ -29,15 +29,16 @@ architecture bhv of tb is
         wait for 10 ns;
         rst <= '1';
         start <= '1';
-        data_in <= x"1A4567F310245543210A135667900100";
-        key_in <= x"A1B2C3D4E5F60718293A4B5C6D7E8F90";
-        wait for 125 ns;
-        data_in <= x"FEDCBA9876543210FEDCBA9876543210";
-        key_in <= x"1A4567F310245543210A135667900100";
-        wait for 130 ns;
+        wait for 200 ns;
+        data_in <= x"00112233445566778899aabbccddeeff";
+        key_in <= x"000102030405060708090a0b0c0d0e0f";
+        wait for 225 ns;
+        data_in <= x"6bc1bee22e409f96e93d7e117393172a";
+        key_in <= x"2b7e151628aed2a6abf7158809cf4f3c";
+        wait for 230 ns;
         data_in <= x"A1B2C3D4E5F60718293A4B5C6D7E8F90";
         key_in <= x"FEDCBA9876543210FEDCBA9876543210";
-        wait for 120 ns;
+        wait for 220 ns;
         wait;
     end process proc_tb;
 
