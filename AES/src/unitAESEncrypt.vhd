@@ -2,7 +2,7 @@ library IEEE;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity AES is 
+entity AES_encrypt is 
     generic (
         KEY_SIZE  : integer := 128;
         TEXT_SIZE : integer := 128;
@@ -16,9 +16,9 @@ entity AES is
         i_cipher_key : in std_ulogic_vector(KEY_SIZE-1 downto 0);
         o_data_out : out std_ulogic_vector(TEXT_SIZE-1 downto 0)
     );
-end entity AES;
+end entity AES_encrypt;
 
-architecture RTL of AES is
+architecture RTL of AES_encrypt is
     -- SYNC DATA
     signal data_sync : std_ulogic_vector(127 downto 0) := (others => '0');
     signal key_sync : std_ulogic_vector(127 downto 0) := (others => '0');
@@ -35,8 +35,14 @@ architecture RTL of AES is
     signal round_expanded_key : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_key_state_out : std_ulogic_vector(127 downto 0);
     ---
+    signal internal_in : std_ulogic_vector(127 downto 0) := (others => '0');
+    signal internal_out : std_ulogic_vector(127 downto 0) := (others => '0');
+    ---
     type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(127 downto 0);
     signal expanded_state_bank : tExpandedKeyBank := (others => (others => '0'));
+    --
+    signal ext_count : integer := 0;
+    signal int_count : integer := 0;
     
 begin 
     SBOX : entity work.sbox(RTL)
@@ -76,8 +82,8 @@ begin
                 o_state_out => round_key_state_out
         ); 
 process(i_clk,i_nrst_async) is
-    variable ext_count : integer := 0;
-    variable int_count : integer := 0;
+    --variable ext_count : integer := 0;
+    --variable int_count : integer := 0;
     variable expanded_key_bank_var : tExpandedKeyBank := (others => (others => '0'));
     variable internal : std_ulogic_vector(127 downto 0) := (others => '0');
     variable expanded_state_bank_var : tExpandedKeyBank := (others => (others => '0'));
@@ -88,8 +94,8 @@ process(i_clk,i_nrst_async) is
             row_state_in <= (others => '0');
             column_state_in <= (others => '0');
             round_key_state_in <= (others => '0');
-            int_count := 0;
-            ext_count := 0;
+            int_count <= 0;
+            ext_count <= 0;
         elsif(rising_edge(i_clk)) then
             if (i_start = '1' ) then 
                 if (sync = '1') then
@@ -103,50 +109,54 @@ process(i_clk,i_nrst_async) is
                             round_key_state_in <= data_sync;
                             round_expanded_key <= key_sync;
                             expanded_state_bank(ext_count) <= round_key_state_out;
-                            ext_count := ext_count + 1;
+                            internal_in <= round_key_state_out;
+                            ext_count <= ext_count + 1;
+                            int_count <= 0;
                         when 1 to 9 =>
                             case int_count is 
                                 when 0 => 
-                                    byte_in <= internal;
+                                    byte_in <= internal_in;
                                     --expanded_state_bank_var(ext_count) := byte_out;
-                                    internal := byte_out;
-                                    int_count := int_count + 1;
+                                    internal_out <= byte_out;
+                                    int_count <= int_count + 1;
                                 when 1 => 
-                                    row_state_in <= internal;
-                                    internal := row_state_out;
-                                    int_count := int_count + 1;
+                                    row_state_in <= internal_out;
+                                    internal_in <= row_state_out;
+                                    int_count <= int_count + 1;
                                 when 2 =>
-                                    column_state_in <= internal;
-                                    internal := column_state_out;
-                                    int_count := int_count + 1;
+                                    column_state_in <= internal_in;
+                                    internal_out <= column_state_out;
+                                    int_count <= int_count + 1;
                                 when 3 =>
-                                    round_key_state_in <= internal;
+                                    round_key_state_in <= internal_out;
                                     round_expanded_key <= expanded_key((ext_count+1)*128-1 downto ext_count*128);
-                                    internal := round_key_state_out;
+                                    internal_in <= round_key_state_out;
                                     expanded_state_bank(ext_count) <= round_key_state_out;
-                                    int_count := 0;
-                                    ext_count := ext_count + 1;
+                                    int_count <= 0;
+                                    ext_count <= ext_count + 1;
                                 when others => 
                                     null;
                             end case;
                         when 10 =>
                             case int_count is 
                                 when 0 => 
-                                    byte_in <= expanded_state_bank_var(ext_count-1);
-                                    internal := byte_out;
-                                    int_count := int_count + 1;
+                                    --byte_in <= expanded_state_bank_var(ext_count-1);
+                                    byte_in <= internal_in;
+                                    internal_out <= byte_out;
+                                    int_count <= int_count + 1;
                                 when 1 => 
-                                    row_state_in <= internal;
-                                    internal := row_state_out;
-                                    int_count := int_count + 1;
+                                    row_state_in <= internal_out;
+                                    internal_in <= row_state_out;
+                                    int_count <= int_count + 1;
                                 when 2 =>
-                                    round_key_state_in <= internal;
+                                    round_key_state_in <= internal_in;
                                     round_expanded_key <= expanded_key((ext_count+1)*128-1 downto ext_count*128);
-                                    internal := round_key_state_out;
+                                    internal_out <= round_key_state_out;
                                     expanded_state_bank(ext_count) <= round_key_state_out;
-                                    data_out := internal;
-                                    int_count := 0;
-                                    ext_count := 0;
+                                    --data_out <= internal;
+                                    data_out := round_key_state_out;
+                                    int_count <= 0;
+                                    ext_count <= 0;
                                     sync <= '1';
                                 when others => 
                                     null;
