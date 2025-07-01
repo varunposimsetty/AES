@@ -19,6 +19,9 @@ entity AES_encrypt is
 end entity AES_encrypt;
 
 architecture RTL of AES_encrypt is
+    --
+    type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(127 downto 0);
+    signal expanded_state_bank : tExpandedKeyBank := (others => (others => '0'));
     -- SYNC DATA
     signal data_sync : std_ulogic_vector(127 downto 0) := (others => '0');
     signal key_sync : std_ulogic_vector(127 downto 0) := (others => '0');
@@ -34,15 +37,9 @@ architecture RTL of AES_encrypt is
     signal round_key_state_in : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_expanded_key : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_key_state_out : std_ulogic_vector(127 downto 0);
-    ---
-    signal internal_in : std_ulogic_vector(127 downto 0) := (others => '0');
-    signal internal_out : std_ulogic_vector(127 downto 0) := (others => '0');
-    ---
-    type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(127 downto 0);
-    signal expanded_state_bank : tExpandedKeyBank := (others => (others => '0'));
     --
+    signal a : std_ulogic_vector(127 downto 0) := (others => '0');
     signal ext_count : integer := 0;
-    signal int_count : integer := 0;
     
 begin 
     SBOX : entity work.sbox(RTL)
@@ -82,19 +79,18 @@ begin
                 o_state_out => round_key_state_out
         ); 
 process(i_clk,i_nrst_async) is
-    --variable ext_count : integer := 0;
-    --variable int_count : integer := 0;
     variable expanded_key_bank_var : tExpandedKeyBank := (others => (others => '0'));
     variable internal : std_ulogic_vector(127 downto 0) := (others => '0');
     variable expanded_state_bank_var : tExpandedKeyBank := (others => (others => '0'));
     variable data_out : std_ulogic_vector(127 downto 0) := (others => '0'); 
+    variable i : integer := 0;
+    --variable result : integer := (ext_count mod 4);
       begin 
         if (i_nrst_async = '0') then 
             byte_in <= (others => '0');
             row_state_in <= (others => '0');
             column_state_in <= (others => '0');
             round_key_state_in <= (others => '0');
-            int_count <= 0;
             ext_count <= 0;
         elsif(rising_edge(i_clk)) then
             if (i_start = '1' ) then 
@@ -102,65 +98,43 @@ process(i_clk,i_nrst_async) is
                     sync <= '0'; 
                     data_sync <= i_data_in;
                     key_sync <= i_cipher_key;
+                    round_key_state_in <= data_sync;
+                    round_expanded_key <= key_sync;
+                    i := 1;
                 elsif(sync = '0') then 
-                    case ext_count is 
-                        when 0 => 
-                            -- Round key  
-                            round_key_state_in <= data_sync;
-                            round_expanded_key <= key_sync;
-                            expanded_state_bank(ext_count) <= round_key_state_out;
-                            internal_in <= round_key_state_out;
+                    case (ext_count mod 4) is 
+                        when  0 => 
+                            if (ext_count < 40) then 
+                                a <= round_key_state_out;
+                                byte_in <= round_key_state_out;
+                                ext_count <= ext_count + 1;
+                            elsif(ext_count = 40) then 
+                                a <= round_key_state_out;
+                                data_out := round_key_state_out;
+                                ext_count <= 0;
+                                sync <= '1';
+                            end if;
+                        when  1 => 
+                            if (ext_count /= 38) then 
+                                a <= byte_out;
+                                row_state_in <= byte_out;
+                                ext_count <= ext_count + 1;
+                            elsif(ext_count = 38) then 
+                                a <= byte_out;
+                                round_key_state_in <= byte_out;
+                                round_expanded_key <= expanded_key((i+1)*128-1 downto i*128);
+                                ext_count <= ext_count + 2;
+                            end if;
+                        when  2 => 
+                            a <= row_state_out;
+                            column_state_in <= row_state_out;
                             ext_count <= ext_count + 1;
-                            int_count <= 0;
-                        when 1 to 9 =>
-                            case int_count is 
-                                when 0 => 
-                                    byte_in <= internal_in;
-                                    --expanded_state_bank_var(ext_count) := byte_out;
-                                    internal_out <= byte_out;
-                                    int_count <= int_count + 1;
-                                when 1 => 
-                                    row_state_in <= internal_out;
-                                    internal_in <= row_state_out;
-                                    int_count <= int_count + 1;
-                                when 2 =>
-                                    column_state_in <= internal_in;
-                                    internal_out <= column_state_out;
-                                    int_count <= int_count + 1;
-                                when 3 =>
-                                    round_key_state_in <= internal_out;
-                                    round_expanded_key <= expanded_key((ext_count+1)*128-1 downto ext_count*128);
-                                    internal_in <= round_key_state_out;
-                                    expanded_state_bank(ext_count) <= round_key_state_out;
-                                    int_count <= 0;
-                                    ext_count <= ext_count + 1;
-                                when others => 
-                                    null;
-                            end case;
-                        when 10 =>
-                            case int_count is 
-                                when 0 => 
-                                    --byte_in <= expanded_state_bank_var(ext_count-1);
-                                    byte_in <= internal_in;
-                                    internal_out <= byte_out;
-                                    int_count <= int_count + 1;
-                                when 1 => 
-                                    row_state_in <= internal_out;
-                                    internal_in <= row_state_out;
-                                    int_count <= int_count + 1;
-                                when 2 =>
-                                    round_key_state_in <= internal_in;
-                                    round_expanded_key <= expanded_key((ext_count+1)*128-1 downto ext_count*128);
-                                    internal_out <= round_key_state_out;
-                                    expanded_state_bank(ext_count) <= round_key_state_out;
-                                    --data_out <= internal;
-                                    data_out := round_key_state_out;
-                                    int_count <= 0;
-                                    ext_count <= 0;
-                                    sync <= '1';
-                                when others => 
-                                    null;
-                            end case;
+                        when  3 => 
+                            a <= column_state_out;
+                            round_key_state_in <= column_state_out;
+                            round_expanded_key <= expanded_key((i+1)*128-1 downto i*128);
+                            ext_count <= ext_count + 1;
+                            i := i + 1;
                         when others => 
                             null;
                     end case;
