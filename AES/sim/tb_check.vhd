@@ -11,10 +11,10 @@ architecture bhv of tb is
     signal data_out : std_ulogic_vector(127 downto 0);
 
     begin 
-    DUT_AES : entity work.move_columns(RTL)
+    DUT_AES : entity work.inv_move_columns(RTL)
         port map(
-            i_column_state_in => data_in,
-            o_column_state_out => data_out
+            i_inv_column_state_in => data_in,
+            o_inv_column_state_out => data_out
         );
 
     proc_tb : process is 

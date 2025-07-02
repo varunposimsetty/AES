@@ -48,10 +48,55 @@ architecture RTL of inv_move_columns is
         3 => x"0E"
     );
 
-    -- https://crypto.stackexchange.com/questions/2569/how-does-one-implement-the-inverse-of-aes-mixcolumns
-    --check that for mixed inv column multiplication  
 
-    -- Function for multiplication 
+
+    -- multiplication functions doing all multiplications based on the multiplication of 2
+    function xtime(x : unsigned(7 downto 0)) return unsigned is
+        begin
+        if x(7) = '1' then
+            return (x sll 1) xor to_unsigned(16#1B#, 8);
+        else
+            return x sll 1;
+        end if;
+    end function;
+
+    function mul2(x : unsigned(7 downto 0)) return unsigned is
+        begin
+            return xtime(x);
+    end function;
+
+    function mul4(x : unsigned(7 downto 0)) return unsigned is
+        begin
+            return xtime(xtime(x));
+    end function;
+
+    function mul8(x : unsigned(7 downto 0)) return unsigned is
+        begin
+            return xtime(xtime(xtime(x)));
+    end function;
+
+    function mul9(x : unsigned(7 downto 0)) return unsigned is
+        begin
+            return mul8(x) xor x;                         
+    end function; 
+
+    function mul11(x : unsigned(7 downto 0)) return unsigned is
+        begin
+            return mul8(x) xor mul2(x) xor x;           
+    end function;
+
+    function mul13(x : unsigned(7 downto 0)) return unsigned is
+        begin
+            return mul8(x) xor mul4(x) xor x;            
+    end function;
+
+    function mul14(x : unsigned(7 downto 0)) return unsigned is
+        begin
+            return mul8(x) xor mul4(x) xor mul2(x);      
+    end function;
+
+
+    -- Function for row multiplication 
    function row_operation(a : tColumns; b : tColumns) return std_ulogic_vector is
         variable result : std_ulogic_vector(7 downto 0) := (others => '0');
         variable temp_result : tColumns := (others => (others => '0'));
@@ -59,22 +104,14 @@ architecture RTL of inv_move_columns is
         
         begin
         for i in 0 to 3 loop
-            if a(i) = x"01" then
-                temp_result(i) := b(i);
-            elsif a(i) = x"02" then
-                if (b(i)(7) = '1') then 
-                    shifted_result := (unsigned(b(i)) sll 1) xor x"1B";
-                else 
-                    shifted_result := unsigned(b(i)) sll 1;
-                end if;
-                temp_result(i) := std_ulogic_vector(shifted_result);
-            elsif a(i) = x"03" then
-                if (b(i)(7) = '1') then 
-                    shifted_result := (unsigned(b(i)) sll 1) xor x"1B";
-                else 
-                    shifted_result := unsigned(b(i)) sll 1;
-                end if;
-                temp_result(i) := std_ulogic_vector(shifted_result xor unsigned(b(i)));
+            if a(i) = x"09" then
+                temp_result(i) := std_ulogic_vector(mul9(unsigned(b(i))));
+            elsif a(i) = x"0B" then
+                temp_result(i) := std_ulogic_vector(mul11(unsigned(b(i))));
+            elsif a(i) = x"0D" then
+                temp_result(i) := std_ulogic_vector(mul13(unsigned(b(i))));
+            elsif a(i) = x"0E" then 
+                temp_result(i) := std_ulogic_vector(mul14(unsigned(b(i))));
         end if;
     end loop;
     result := std_ulogic_vector(unsigned(temp_result(0)) xor unsigned(temp_result(1)) xor unsigned(temp_result(2)) xor unsigned(temp_result(3)));
