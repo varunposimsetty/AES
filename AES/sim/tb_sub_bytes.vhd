@@ -39,6 +39,9 @@ architecture bhv of tb is
         data_in <= x"00112233445566778899aabbccddeeff";
         key_in <= x"000102030405060708090a0b0c0d0e0f";
         wait for 220 ns;
+        data_in <= x"00112233445566778899aabbccddeeff";
+        key_in <= x"000102030405060708090a0b0c0d0e0f";
+        wait for 500 ns;
         wait;
     end process proc_tb;
 
