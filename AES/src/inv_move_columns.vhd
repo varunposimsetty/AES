@@ -48,6 +48,9 @@ architecture RTL of inv_move_columns is
         3 => x"0E"
     );
 
+    -- https://crypto.stackexchange.com/questions/2569/how-does-one-implement-the-inverse-of-aes-mixcolumns
+    --check that for mixed inv column multiplication  
+
     -- Function for multiplication 
    function row_operation(a : tColumns; b : tColumns) return std_ulogic_vector is
         variable result : std_ulogic_vector(7 downto 0) := (others => '0');
