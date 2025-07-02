@@ -19,9 +19,6 @@ entity AES_encrypt is
 end entity AES_encrypt;
 
 architecture RTL of AES_encrypt is
-    --
-    type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(127 downto 0);
-    signal expanded_state_bank : tExpandedKeyBank := (others => (others => '0'));
     -- SYNC DATA
     signal data_sync : std_ulogic_vector(127 downto 0) := (others => '0');
     signal key_sync : std_ulogic_vector(127 downto 0) := (others => '0');
@@ -37,9 +34,7 @@ architecture RTL of AES_encrypt is
     signal round_key_state_in : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_expanded_key : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_key_state_out : std_ulogic_vector(127 downto 0);
-    --
-    signal a : std_ulogic_vector(127 downto 0) := (others => '0');
-    
+
     
 begin 
     SBOX : entity work.sbox(RTL)
@@ -78,18 +73,11 @@ begin
                 i_expanded_key => round_expanded_key,
                 o_state_out => round_key_state_out
         ); 
-process(i_clk,i_nrst_async) is
-    variable expanded_key_bank_var : tExpandedKeyBank := (others => (others => '0'));
-    variable internal : std_ulogic_vector(127 downto 0) := (others => '0');
-    variable expanded_state_bank_var : tExpandedKeyBank := (others => (others => '0'));
+process(i_clk,i_nrst_async) is    
     variable data_out : std_ulogic_vector(127 downto 0) := (others => '0'); 
-
-    --
     variable ext_count : integer := 0;
     variable i : integer := 0;
-    
-    --variable result : integer := (ext_count mod 4);
-      begin 
+    begin 
         if (i_nrst_async = '0') then 
             byte_in <= (others => '0');
             row_state_in <= (others => '0');
@@ -112,19 +100,15 @@ process(i_clk,i_nrst_async) is
                         if(ext_count < 38) then 
                             case (ext_count mod 4) is 
                                 when  0 => 
-                                    a <= round_key_state_out;
                                     byte_in <= round_key_state_out;
                                     ext_count := ext_count + 1;
                                 when  1 => 
-                                    a <= byte_out;
                                     row_state_in <= byte_out;
                                     ext_count := ext_count + 1;
                                 when  2 => 
-                                    a <= row_state_out;
                                     column_state_in <= row_state_out;
                                     ext_count := ext_count + 1;
                                 when  3 => 
-                                    a <= column_state_out;
                                     round_key_state_in <= column_state_out;
                                     round_expanded_key <= expanded_key((i+1)*128-1 downto i*128);
                                     ext_count := ext_count + 1;
@@ -135,12 +119,10 @@ process(i_clk,i_nrst_async) is
                         elsif (ext_count >= 38) then 
                             case ext_count is 
                                 when 38 => 
-                                    a <= byte_out;
                                     round_key_state_in <= row_state_out;
                                     round_expanded_key <= expanded_key((i+1)*128-1 downto i*128);
                                     ext_count := ext_count + 1;
                                 when 39 => 
-                                    a <= round_key_state_out;
                                     data_out := round_key_state_out;
                                     ext_count := 0;
                                     sync <= '1';

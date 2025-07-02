@@ -24,6 +24,8 @@ architecture bhv of tb is
         wait for 120 ns;
         data_in <= x"36339D50F9B539269F2C092DC4406D23";
         wait for 120 ns;
+        data_in <= (others => '0');
+        wait for 120 ns;
         wait;
     end process proc_tb;
 end architecture bhv;
