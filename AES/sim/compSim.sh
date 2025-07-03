@@ -8,6 +8,7 @@ GTKPROJ_FILE=result.gtkw
 mkdir -p $WORK_DIR
 
 # importing source files
+ghdl -i --workdir=$WORK_DIR ../src/Top.vhd
 ghdl -i --workdir=$WORK_DIR ../src/unitAESEncrypt.vhd
 ghdl -i --workdir=$WORK_DIR ../src/unitAESDecrypt.vhd
 ghdl -i --workdir=$WORK_DIR ../src/sub_bytes.vhd
@@ -18,7 +19,8 @@ ghdl -i --workdir=$WORK_DIR ../src/move_columns.vhd
 ghdl -i --workdir=$WORK_DIR ../src/inv_move_columns.vhd
 ghdl -i --workdir=$WORK_DIR ../src/key_expansion.vhd
 ghdl -i --workdir=$WORK_DIR ../src/add_round_key.vhd
-ghdl -i --workdir=$WORK_DIR ./tb_sub_bytes.vhd
+ghdl -i --workdir=$WORK_DIR ./tb_AES.vhd
+#ghdl -i --workdir=$WORK_DIR ./tb_sub_bytes.vhd
 #ghdl -i --workdir=$WORK_DIR ./tb_check.vhd
 
 
