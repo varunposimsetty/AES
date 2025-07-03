@@ -12,3 +12,6 @@
 
 ### text files
 *.lst 
+
+### macOS metadata files
+*..DS_Store
