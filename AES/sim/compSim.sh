@@ -18,8 +18,8 @@ ghdl -i --workdir=$WORK_DIR ../src/move_columns.vhd
 ghdl -i --workdir=$WORK_DIR ../src/inv_move_columns.vhd
 ghdl -i --workdir=$WORK_DIR ../src/key_expansion.vhd
 ghdl -i --workdir=$WORK_DIR ../src/add_round_key.vhd
-#ghdl -i --workdir=$WORK_DIR ./tb_sub_bytes.vhd
-ghdl -i --workdir=$WORK_DIR ./tb_check.vhd
+ghdl -i --workdir=$WORK_DIR ./tb_sub_bytes.vhd
+#ghdl -i --workdir=$WORK_DIR ./tb_check.vhd
 
 
 

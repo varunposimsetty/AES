@@ -9,16 +9,16 @@ architecture bhv of tb is
     signal clk : std_ulogic := '0';
     signal rst : std_ulogic := '0';
     signal start : std_ulogic := '0';
-    signal data_in : std_ulogic_vector(127 downto 0) := x"00112233445566778899aabbccddeeff";
+    signal data_in : std_ulogic_vector(127 downto 0) := x"69C4E0D86A7B0430D8CDB78070B4C55A";
     signal key_in : std_ulogic_vector(127 downto 0) := x"000102030405060708090a0b0c0d0e0f";
     signal data_out : std_ulogic_vector(127 downto 0);
 
     begin 
-    DUT_AES : entity work.AES_encrypt(RTL)
+    DUT_AES : entity work.AES_decrypt(RTL)
         port map(
             i_clk => clk,
             i_nrst_async => rst,
-            i_start => start,
+            i_de_start => start,
             i_data_in => data_in,
             i_cipher_key => key_in,
             o_data_out => data_out

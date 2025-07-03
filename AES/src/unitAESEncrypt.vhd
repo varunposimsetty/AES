@@ -11,7 +11,7 @@ entity AES_encrypt is
     port (
         i_clk : in std_ulogic;
         i_nrst_async : in std_ulogic;
-        i_start : in std_ulogic;
+        i_en_start : in std_ulogic;
         i_data_in  : in std_ulogic_vector(TEXT_SIZE-1 downto 0);
         i_cipher_key : in std_ulogic_vector(KEY_SIZE-1 downto 0);
         o_data_out : out std_ulogic_vector(TEXT_SIZE-1 downto 0)
@@ -85,7 +85,7 @@ process(i_clk,i_nrst_async) is
             round_key_state_in <= (others => '0');
             ext_count := 0;
         elsif(rising_edge(i_clk)) then
-            if (i_start = '1' ) then 
+            if (i_en_start = '1' ) then 
                 if (sync = '1') then
                     sync <= '0'; 
                     data_sync <= i_data_in;
