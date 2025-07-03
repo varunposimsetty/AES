@@ -1,4 +1,4 @@
-# RTL implementing a 128-bit AES 
+# RTL implementation of a 128-bit AES 
 ![Top Module](Top.png)
 ## Encryption 
 An implementation of AES Encryption which is partially pipelined i.e. sequential but internally piplined.
