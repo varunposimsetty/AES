@@ -4,13 +4,13 @@ use IEEE.numeric_std.all;
 
 entity key_expansion is
     generic (
-        key_size : integer := 128;
+        key_size : integer := 128; -- 128/192/256
         word_size : integer := 32;
-        rounds    : integer := 10 -- For AES-128
+        rounds    : integer := 10 -- 10/12/14
     );
     port (
         i_key          : in  std_ulogic_vector(key_size-1 downto 0);
-        o_expanded_key : out std_ulogic_vector(1407 downto 0)
+        o_expanded_key : out std_ulogic_vector((((rounds+1)*128)-1) downto 0)
     );
 end entity key_expansion;
 

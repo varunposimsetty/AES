@@ -4,9 +4,9 @@ use ieee.numeric_std.all;
 
 entity AES_encrypt is 
     generic (
-        KEY_SIZE  : integer := 128;
-        TEXT_SIZE : integer := 128;
-        ROUNDS    : integer := 10 -- # of rounds depends on key size for 128 -> 10, 192 -> 12, 256 -> 1
+        KEY_SIZE  : integer := 128; -- 128/192/256
+        TEXT_SIZE : integer := 128; --128
+        ROUNDS    : integer := 10 -- 10/12/14
     );
     port (
         i_clk : in std_ulogic;
@@ -20,8 +20,8 @@ end entity AES_encrypt;
 
 architecture RTL of AES_encrypt is
     -- SYNC DATA
-    signal data_sync : std_ulogic_vector(127 downto 0) := (others => '0');
-    signal key_sync : std_ulogic_vector(127 downto 0) := (others => '0');
+    signal data_sync : std_ulogic_vector(TEXT_SIZE-1 downto 0) := (others => '0');
+    signal key_sync : std_ulogic_vector(KEY_SIZE-1 downto 0) := (others => '0');
     signal sync : std_ulogic := '1';
     -- Devices
     signal byte_in : std_ulogic_vector(127 downto 0) := (others => '0');
@@ -97,7 +97,7 @@ process(i_clk,i_nrst_async) is
                         round_expanded_key <= key_sync;
                         i := 1;
                     else
-                        if(ext_count < 38) then 
+                        if(ext_count <= 36) then 
                             case (ext_count mod 4) is 
                                 when  0 => 
                                     byte_in <= round_key_state_out;
@@ -116,8 +116,11 @@ process(i_clk,i_nrst_async) is
                                 when others => 
                                     null;
                             end case;
-                        elsif (ext_count >= 38) then 
+                        elsif (ext_count > 36) then 
                             case ext_count is 
+                                when 37 => 
+                                    row_state_in <= byte_out;
+                                    ext_count := ext_count + 1;
                                 when 38 => 
                                     round_key_state_in <= row_state_out;
                                     round_expanded_key <= expanded_key((i+1)*128-1 downto i*128);
