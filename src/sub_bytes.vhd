@@ -4,15 +4,15 @@ use IEEE.numeric_std.all;
 
 entity sbox is 
     port (
-    i_byte_in  : in std_ulogic_vector(7 downto 0);
-    o_byte_out : out std_ulogic_vector(7 downto 0)
+    i_byte_in  : in std_ulogic_vector(127 downto 0);
+    o_byte_out : out std_ulogic_vector(127 downto 0)
     );
 end entity sbox;
 
 architecture RTL of sbox is 
     constant SBoxLength : integer := 256;
     type tSBoxReg is array (0 to SBoxLength-1) of std_ulogic_vector(7 downto 0);
-    signal byte_out : std_ulogic_vector(7 downto 0);
+    
 
     constant SBoxArray : tSBoxReg := (
         0  => x"63",
@@ -276,9 +276,11 @@ architecture RTL of sbox is
 
 begin
     process(i_byte_in)
+    variable byte_out : std_ulogic_vector(127 downto 0);
     begin
-        byte_out <= SBoxArray(to_integer(unsigned(i_byte_in))); 
-    end process;
+        for i in 0 to 15 loop 
+            byte_out((8*i)+7 downto 8*i) := SBoxArray(to_integer(unsigned(i_byte_in((8*i)+7 downto 8*i))));
+        end loop;
     o_byte_out <= byte_out;
-
+    end process;
 end architecture RTL;
