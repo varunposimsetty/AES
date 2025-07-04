@@ -5,7 +5,6 @@ use IEEE.numeric_std.all;
 entity key_expansion is
     generic (
         key_size : integer := 128; -- 128/192/256
-        word_size : integer := 32;
         rounds    : integer := 10 -- 10/12/14
     );
     port (
@@ -89,7 +88,7 @@ architecture RTL of key_expansion is
             if (i = 0) then
                 if(key_size = 128) then 
                     expanded_key_var(i) := i_key;
-                elsif(key_size = 196) then 
+                elsif(key_size = 192) then 
                     expanded_key_var(i) := i_key(191 downto 64);
                 elsif(key_size = 256) then 
                     expanded_key_var(i) := i_key(255 downto 128);
