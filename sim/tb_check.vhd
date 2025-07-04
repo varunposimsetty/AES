@@ -8,13 +8,17 @@ end entity tb;
 
 architecture bhv of tb is 
     signal data_in : std_ulogic_vector(127 downto 0) := (others => '0');
-    signal data_out : std_ulogic_vector(127 downto 0);
+    signal data_out : std_ulogic_vector(1047 downto 0);
 
     begin 
-    DUT_AES : entity work.inv_move_columns(RTL)
+    DUT_AES : entity work.key_expansion(RTL)
+        generic map(
+            key_size => 128, -- 128/192/256
+            rounds => 10 -- 10/12/14
+        )
         port map(
-            i_inv_column_state_in => data_in,
-            o_inv_column_state_out => data_out
+            i_key => data_in,
+            o_expanded_key => data_out
         );
 
     proc_tb : process is 
