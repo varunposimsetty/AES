@@ -15,7 +15,7 @@ end entity key_expansion;
 
 architecture RTL of key_expansion is
     -- Holds all the keys
-    type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(key_size-1 downto 0);
+    type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(127 downto 0);
     -- Substitute function
     function s_box_function(input_byte : std_ulogic_vector(7 downto 0)) return std_ulogic_vector is
         type s_box_array_type is array(0 to 255) of std_ulogic_vector(7 downto 0);

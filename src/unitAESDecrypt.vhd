@@ -35,8 +35,8 @@ architecture RTL of AES_decrypt is
     signal round_expanded_key : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_key_state_out : std_ulogic_vector(127 downto 0);
     --
-    signal ext_count : integer := 0;
-    signal i : integer := 0;
+    --signal ext_count : integer := 0;
+    --signal i : integer := 0;
 
     
 begin 
@@ -78,66 +78,68 @@ begin
 process(i_clk,i_nrst_async) is    
     variable data_out : std_ulogic_vector(127 downto 0) := (others => '0'); 
     variable final_count : integer := ROUNDS*4-1;
+    variable ext_count : integer := 0;
+    variable i : integer := 0;
     begin 
         if (i_nrst_async = '0') then 
             byte_in <= (others => '0');
             row_state_in <= (others => '0');
             column_state_in <= (others => '0');
             round_key_state_in <= (others => '0');
-            ext_count <= 0;
+            ext_count := 0;
         elsif(rising_edge(i_clk)) then
             if (i_de_start = '1' ) then 
                 if (sync = '1') then
                     sync <= '0'; 
                     data_sync <= i_data_in;
                     key_sync <= i_cipher_key;
-                    i <= 0;
+                    i := 0;
                 elsif(sync = '0') then 
                     if( i = 0) then 
                         round_key_state_in <= data_sync;
                         round_expanded_key <= expanded_key(((10-i)+1)*128-1 downto (10-i)*128);
-                        i <= 1;
+                        i := 1;
                     else
                         if(i <= ROUNDS-1) then 
                             case (ext_count mod 4) is 
                                 when  0 => 
                                   if (i = 1) then 
                                       row_state_in <= round_key_state_out;
-                                      ext_count <= ext_count + 1;
+                                      ext_count := ext_count + 1;
                                   else 
                                       row_state_in <= column_state_out;
-                                      ext_count <= ext_count + 1;
+                                      ext_count := ext_count + 1;
                                   end if;
                                 when  1 => 
                                     byte_in <= row_state_out;
-                                    ext_count <= ext_count + 1;
+                                    ext_count := ext_count + 1;
                                 when  2 => 
                                     round_key_state_in <= byte_out;
-                                    round_expanded_key <= expanded_key(((10-i)+1)*128-1 downto (10-i)*128);
-                                    ext_count <= ext_count + 1;
+                                    round_expanded_key <= expanded_key(((ROUNDS-i)+1)*128-1 downto (ROUNDS-i)*128);
+                                    ext_count := ext_count + 1;
                                 when  3 => 
                                     column_state_in <= round_key_state_out;
-                                    ext_count <= ext_count + 1;
-                                    i <= i + 1;
+                                    ext_count := ext_count + 1;
+                                    i := i + 1;
                                 when others => 
                                     null;
                             end case;
                         elsif (i = ROUNDS) then 
                                 if(ext_count = final_count-3) then 
                                     row_state_in <= column_state_out;
-                                    ext_count <= ext_count + 1;
+                                    ext_count := ext_count + 1;
                                 elsif(ext_count = final_count-2) then
                                     byte_in <= row_state_out;
-                                    ext_count <= ext_count + 1;
+                                    ext_count := ext_count + 1;
                                 elsif(ext_count = final_count-1) then 
                                     round_key_state_in <= byte_out;
-                                    round_expanded_key <= expanded_key(((10-i)+1)*128-1 downto (10-i)*128);
-                                    ext_count <= ext_count + 1;
+                                    round_expanded_key <= expanded_key(((ROUNDS-i)+1)*128-1 downto (ROUNDS-i)*128);
+                                    ext_count := ext_count + 1;
                                 elsif(ext_count = final_count) then 
                                     data_out := round_key_state_out;
-                                    ext_count <= 0;
+                                    ext_count := 0;
                                     sync <= '1';
-                                    i <= 0;
+                                    i := 0;
                                 end if;
                         end if;
                     end if;
