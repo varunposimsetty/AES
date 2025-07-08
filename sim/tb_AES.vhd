@@ -10,15 +10,15 @@ architecture bhv of tb is
     signal rst : std_ulogic := '0';
     signal mode : std_ulogic := '0';
     signal data_in : std_ulogic_vector(127 downto 0) := x"00112233445566778899aabbccddeeff";
-    signal key_in : std_ulogic_vector(191 downto 0) := x"000102030405060708090A0B0C0D0E0F1011121314151617";
+    signal key_in : std_ulogic_vector(255 downto 0) := x"b52c505a37d78eda5dd34f20c22540ea1b58963cf8e5bf8ffa85f9f2492505b4";
     signal data_out : std_ulogic_vector(127 downto 0);
     
     begin 
     DUT_AES : entity work.AES(RTL)
         generic map(
-            KEY_SIZE  => 192,
+            KEY_SIZE  => 256,
             TEXT_SIZE => 128,
-            ROUNDS    => 12
+            ROUNDS    => 14
         )
         port map(
             i_clk => clk,
@@ -34,7 +34,7 @@ architecture bhv of tb is
         wait for 10 ns;
         rst <= '1';
         wait for 900 ns;
-        key_in <= x"8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b";
+        key_in <= x"b52c505a37d78eda5dd34f20c22540ea1b58963cf8e5bf8ffa85f9f2492505b4";
         data_in <= x"6bc1bee22e409f96e93d7e117393172a";
         wait for 900 ns;
         --key_in <= x"2b7e151628aed2a6abf7158809cf4f3c";
