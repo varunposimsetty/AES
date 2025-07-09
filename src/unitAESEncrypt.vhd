@@ -120,22 +120,25 @@ process(i_clk,i_nrst_async) is
                                     null;
                             end case;
                         elsif (i = ROUNDS) then 
-                                if(ext_count = final_count-3) then 
+                            case ext_count is  
+                                when 52 =>      
                                     byte_in <= round_key_state_out;
                                     ext_count := ext_count + 1;
-                                elsif(ext_count = final_count-2) then 
+                                when 53 => 
                                     row_state_in <= byte_out;
                                     ext_count := ext_count + 1;
-                                elsif(ext_count = final_count-1) then 
+                                when 54 =>
                                     round_key_state_in <= row_state_out;
                                     round_expanded_key <= expanded_key((i+1)*128-1 downto i*128);
                                     ext_count := ext_count + 1;
-                                elsif(ext_count = final_count) then 
+                                when 55 =>
                                     data_out := round_key_state_out;
                                     ext_count := 0;
                                     sync <= '1';
                                     i := 0;
-                                end if;
+                                when others => 
+                                    null;
+                            end case;
                         end if;
                     end if;
                 end if;
