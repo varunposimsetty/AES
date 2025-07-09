@@ -34,9 +34,6 @@ architecture RTL of AES_decrypt is
     signal round_key_state_in : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_expanded_key : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_key_state_out : std_ulogic_vector(127 downto 0);
-    --
-    --signal ext_count : integer := 0;
-    --signal i : integer := 0;
 
     
 begin 
@@ -97,7 +94,7 @@ process(i_clk,i_nrst_async) is
                 elsif(sync = '0') then 
                     if( i = 0) then 
                         round_key_state_in <= data_sync;
-                        round_expanded_key <= expanded_key(((10-i)+1)*128-1 downto (10-i)*128);
+                        round_expanded_key <= expanded_key(((ROUNDS-i)+1)*128-1 downto (ROUNDS-i)*128);
                         i := 1;
                     else
                         if(i <= ROUNDS-1) then 
@@ -125,22 +122,25 @@ process(i_clk,i_nrst_async) is
                                     null;
                             end case;
                         elsif (i = ROUNDS) then 
-                                if(ext_count = final_count-3) then 
+                                case ext_count is 
+                                when 44 =>   
                                     row_state_in <= column_state_out;
                                     ext_count := ext_count + 1;
-                                elsif(ext_count = final_count-2) then
+                                when 45 =>
                                     byte_in <= row_state_out;
                                     ext_count := ext_count + 1;
-                                elsif(ext_count = final_count-1) then 
+                                when 46 =>
                                     round_key_state_in <= byte_out;
                                     round_expanded_key <= expanded_key(((ROUNDS-i)+1)*128-1 downto (ROUNDS-i)*128);
                                     ext_count := ext_count + 1;
-                                elsif(ext_count = final_count) then 
+                                when 47 => 
                                     data_out := round_key_state_out;
                                     ext_count := 0;
                                     sync <= '1';
                                     i := 0;
-                                end if;
+                                when others => 
+                                    null;
+                                end case;
                         end if;
                     end if;
                 end if;
@@ -148,6 +148,4 @@ process(i_clk,i_nrst_async) is
             end if;
             o_data_out <= data_out;
     end process;
-
-
 end architecture RTL;

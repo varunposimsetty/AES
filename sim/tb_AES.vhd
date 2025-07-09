@@ -34,7 +34,6 @@ architecture bhv of tb is
         wait for 10 ns;
         rst <= '1';
         wait for 900 ns;
-        key_in <= x"8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b";
         data_in <= x"6bc1bee22e409f96e93d7e117393172a";
         wait for 900 ns;
         --key_in <= x"2b7e151628aed2a6abf7158809cf4f3c";
@@ -49,7 +48,9 @@ architecture bhv of tb is
         data_in <= x"A1B2C3D4E5F60718293A4B5C6D7E8F90";
         wait for 200 ns;
         mode <= '1';
-        wait for 1600 ns;
+        data_in <= x"e8ffaaf01d172248dd0752293170e6a7";
+        key_in <= x"000102030405060708090A0B0C0D0E0F1011121314151617";
+        wait for 11600 ns;
         data_in <= x"74e6f7298a9c2d168935f58c001bad88";
         key_in <= x"fbeed618357133667c85e08f7236a8de3c5d2f5d2a7f99f2";
         wait for 1430 ns;
@@ -81,7 +82,7 @@ architecture bhv of tb is
 
     proc_clk : process is
         begin 
-        wait for 1 ns;
+        wait for 5 ns;
         clk <= not clk;
     end process;
 

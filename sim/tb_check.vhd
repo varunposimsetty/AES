@@ -7,14 +7,14 @@ entity tb is
 end entity tb;
 
 architecture bhv of tb is 
-    signal data_in : std_ulogic_vector(127 downto 0) := (others => '0');
-    signal data_out : std_ulogic_vector(1047 downto 0);
+    signal data_in : std_ulogic_vector(191 downto 0) := (others => '0');
+    signal data_out : std_ulogic_vector(1663 downto 0);
 
     begin 
     DUT_AES : entity work.key_expansion(RTL)
         generic map(
-            key_size => 128, -- 128/192/256
-            rounds => 10 -- 10/12/14
+            key_size => 192, -- 128/192/256
+            rounds => 12 -- 10/12/14
         )
         port map(
             i_key => data_in,
@@ -24,11 +24,11 @@ architecture bhv of tb is
     proc_tb : process is 
     begin 
         wait for 10 ns;
-        data_in <= x"247240236966B3FA6ED2753288425B6C";
+        data_in <= x"000102030405060708090A0B0C0D0E0F1011121314151617";
         wait for 120 ns;
-        data_in <= x"36339D50F9B539269F2C092DC4406D23";
+        data_in <= x"000102030405060708090A0B0C0D0E0F1011121314151617";
         wait for 120 ns;
-        data_in <= (others => '0');
+        --data_in <= (others => '0');
         wait for 120 ns;
         wait;
     end process proc_tb;
