@@ -50,7 +50,7 @@ architecture bhv of tb is
         wait for 200 ns;
         mode <= '1';
         wait for 1600 ns;
-        data_in <= x"74e6f7298a9c2d168935f58c001bad88";
+        data_in <= x"4DB112B58C5CBC8FA3E793721AEC1329";
         key_in <= x"b52c505a37d78eda5dd34f20c22540ea1b58963cf8e5bf8ffa85f9f2492505b4";
         wait for 1430 ns;
         data_in <= x"f3e25f62d5c85f6addf85f6cbec6d3de";

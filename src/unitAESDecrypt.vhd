@@ -97,7 +97,7 @@ process(i_clk,i_nrst_async) is
                 elsif(sync = '0') then 
                     if( i = 0) then 
                         round_key_state_in <= data_sync;
-                        round_expanded_key <= expanded_key(((10-i)+1)*128-1 downto (10-i)*128);
+                        round_expanded_key <= expanded_key(((ROUNDS-i)+1)*128-1 downto (ROUNDS-i)*128);
                         i := 1;
                     else
                         if(i <= ROUNDS-1) then 
