@@ -21,7 +21,7 @@ end entity AES_decrypt;
 architecture RTL of AES_decrypt is
    -- SYNC DATA
     signal data_sync : std_ulogic_vector(127 downto 0) := (others => '0');
-    signal key_sync : std_ulogic_vector(127 downto 0) := (others => '0');
+    signal key_sync : std_ulogic_vector(KEY_SIZE-1 downto 0) := (others => '0');
     signal sync : std_ulogic := '1';
     -- Devices
     signal byte_in : std_ulogic_vector(127 downto 0) := (others => '0');
@@ -34,6 +34,9 @@ architecture RTL of AES_decrypt is
     signal round_key_state_in : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_expanded_key : std_ulogic_vector(127 downto 0) := (others => '0');
     signal round_key_state_out : std_ulogic_vector(127 downto 0);
+    --
+    --signal ext_count : integer := 0;
+    --signal i : integer := 0;
 
     
 begin 
@@ -58,7 +61,6 @@ begin
         KEY_EXPANSION : entity work.key_expansion(RTL)
             generic map(
                 key_size => KEY_SIZE,
-                word_size => TEXT_SIZE,
                 rounds => ROUNDS
 
             )
@@ -75,6 +77,7 @@ begin
         ); 
 process(i_clk,i_nrst_async) is    
     variable data_out : std_ulogic_vector(127 downto 0) := (others => '0'); 
+    variable final_count : integer := ROUNDS*4-1;
     variable ext_count : integer := 0;
     variable i : integer := 0;
     begin 
@@ -94,10 +97,10 @@ process(i_clk,i_nrst_async) is
                 elsif(sync = '0') then 
                     if( i = 0) then 
                         round_key_state_in <= data_sync;
-                        round_expanded_key <= expanded_key(((10-i)+1)*128-1 downto (10-i)*128);
+                        round_expanded_key <= expanded_key(((ROUNDS-i)+1)*128-1 downto (ROUNDS-i)*128);
                         i := 1;
                     else
-                        if(ext_count <= 36) then 
+                        if(i <= ROUNDS-1) then 
                             case (ext_count mod 4) is 
                                 when  0 => 
                                   if (i = 1) then 
@@ -112,7 +115,7 @@ process(i_clk,i_nrst_async) is
                                     ext_count := ext_count + 1;
                                 when  2 => 
                                     round_key_state_in <= byte_out;
-                                    round_expanded_key <= expanded_key(((10-i)+1)*128-1 downto (10-i)*128);
+                                    round_expanded_key <= expanded_key(((ROUNDS-i)+1)*128-1 downto (ROUNDS-i)*128);
                                     ext_count := ext_count + 1;
                                 when  3 => 
                                     column_state_in <= round_key_state_out;
@@ -121,23 +124,23 @@ process(i_clk,i_nrst_async) is
                                 when others => 
                                     null;
                             end case;
-                        elsif (ext_count > 36) then 
-                            case ext_count is 
-                                when 37 => 
+                        elsif (i = ROUNDS) then 
+                                if(ext_count = final_count-3) then 
+                                    row_state_in <= column_state_out;
+                                    ext_count := ext_count + 1;
+                                elsif(ext_count = final_count-2) then
                                     byte_in <= row_state_out;
                                     ext_count := ext_count + 1;
-                                when 38 => 
+                                elsif(ext_count = final_count-1) then 
                                     round_key_state_in <= byte_out;
-                                    round_expanded_key <= expanded_key(((10-i)+1)*128-1 downto (10-i)*128);
+                                    round_expanded_key <= expanded_key(((ROUNDS-i)+1)*128-1 downto (ROUNDS-i)*128);
                                     ext_count := ext_count + 1;
-                                when 39 =>
+                                elsif(ext_count = final_count) then 
                                     data_out := round_key_state_out;
                                     ext_count := 0;
                                     sync <= '1';
                                     i := 0;
-                                when others => 
-                                    null;
-                            end case;
+                                end if;
                         end if;
                     end if;
                 end if;

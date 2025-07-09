@@ -6,7 +6,7 @@ entity AES is
     generic (
         KEY_SIZE  : integer := 128; -- can be 128/192/256
         TEXT_SIZE : integer := 128; -- Always 128
-        ROUNDS    : integer := 10 -- # of rounds depends on key size for 128 -> 10, 192 -> 12, 256 -> 1
+        ROUNDS    : integer := 10 -- # of rounds depends on key size for 128 -> 10, 192 -> 12, 256 -> 14
     );
     port (
         i_clk        : in std_ulogic;

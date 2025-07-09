@@ -1,15 +1,13 @@
-# RTL implementation of a 128-bit AES 
-![Top Module](Top.png)
-## Encryption 
-An implementation of AES Encryption which is partially pipelined i.e. sequential but internally piplined.
+# RTL implementation of a AES supporting (128/192/256) key sizes 
+## Encryption
+AES-256 Encryption is shown below 
 ![Encryption](Encryption.png)
-## Decryption
-An implementation of AES Decryption which is partially piplined i.e. sequential but internally piplined.
+## Decryption 
+AES-256 Decryption is shown below for the output obtain in the encryption shown above.
 ![Decryption](Decryption.png)
-# Synthesis of the design 
-![Synthesized design](Synth.png)
-![Elaborated Synthesized Design](Elaborate.png)
-## Utilization 
-- The current LUT and FF utilization is quite low 35.96% and 5.55% but the IO utilization is quite high this is due to the fact that the inputs plain text, cipher key and encrypted text are all taken as inputs and outputs at this stage and each are 128 bits wide. To reduce the IO utilization a Wishbone could be implemented that transfers data serially, and could read the plain text from registers and write back the encrypted text and vice versa. 
-- The current implemenation is a partial pipline i.e. the hardware for different rounds are re-used and hence making it resource efficient, and in the top module a control signal "i_mode" is used which determines if encryption or decryption is performed. 
-![Utilization Table](Utilization.png)
+The implementation is partially piplined but the resouce utilization is slightly high compared to standalone implementations due to the use of an if-else statement rather than a case statement which make the design more sequential and reduces the parallelism causing a slight increase in resouce utilization.
+## Resource Utilization
+Resource Utilization of a generic implementation
+![Generic Implementation](Generic.png)
+Resource utilization in the case of standalone implementation
+![Standalone Implementation](Utilization.png)

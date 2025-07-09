@@ -5,7 +5,6 @@ use IEEE.numeric_std.all;
 entity key_expansion is
     generic (
         key_size : integer := 128; -- 128/192/256
-        word_size : integer := 32;
         rounds    : integer := 10 -- 10/12/14
     );
     port (
@@ -16,7 +15,7 @@ end entity key_expansion;
 
 architecture RTL of key_expansion is
     -- Holds all the keys
-    type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(key_size-1 downto 0);
+    type tExpandedKeyBank is array(0 to rounds) of std_ulogic_vector(127 downto 0);
     -- Substitute function
     function s_box_function(input_byte : std_ulogic_vector(7 downto 0)) return std_ulogic_vector is
         type s_box_array_type is array(0 to 255) of std_ulogic_vector(7 downto 0);
@@ -89,7 +88,7 @@ architecture RTL of key_expansion is
             if (i = 0) then
                 if(key_size = 128) then 
                     expanded_key_var(i) := i_key;
-                elsif(key_size = 196) then 
+                elsif(key_size = 192) then 
                     expanded_key_var(i) := i_key(191 downto 64);
                 elsif(key_size = 256) then 
                     expanded_key_var(i) := i_key(255 downto 128);
