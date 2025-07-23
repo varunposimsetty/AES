@@ -5,7 +5,7 @@ AES-256 Encryption is shown below
 ## Decryption 
 AES-256 Decryption is shown below for the output obtain in the encryption shown above.
 ![Decryption](Decryption.png)
-The implementation is partially piplined but the resouce utilization is slightly high compared to standalone implementations due to the use of an if-else statement rather than a case statement which make the design more sequential and reduces the parallelism causing a slight increase in resouce utilization.
+The implementation is sequential, reusing the same hardware logic across rounds, but the resouce utilization is slightly high compared to standalone implementations due to the use of an if-else statement rather than a case statement which make the design more sequential and reduces the parallelism causing a slight increase in resouce utilization.
 ## Resource Utilization
 Resource Utilization of a generic implementation
 ![Generic Implementation](Generic.png)
