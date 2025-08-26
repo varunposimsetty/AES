@@ -26,7 +26,7 @@ architecture RTL of AES is
 
 begin 
 
-    unit_Encryption : entity work.AES_encrypt(RTL) 
+    unit_Encryption : entity work.AES_encrypt_piplined(RTL) 
         generic map(
             KEY_SIZE  => KEY_SIZE,
             TEXT_SIZE => TEXT_SIZE,
@@ -41,7 +41,7 @@ begin
         o_data_out   => en_data_out
         );
     
-    unit_Decryption : entity work.AES_decrypt(RTL)
+    unit_Decryption : entity work.AES_decrypt_piplined(RTL)
         generic map(
             KEY_SIZE  => KEY_SIZE,
             TEXT_SIZE => TEXT_SIZE,

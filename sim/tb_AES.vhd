@@ -81,7 +81,7 @@ architecture bhv of tb is
 
     proc_clk : process is
         begin 
-        wait for 1 ns;
+        wait for 5 ns;
         clk <= not clk;
     end process;
 
