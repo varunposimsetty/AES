@@ -19,29 +19,37 @@ entity AES_encrypt_piplined is
 end entity AES_encrypt_piplined;
 
 architecture RTL of AES_encrypt_piplined is
-    type tRoundBank is array (natural range <>) of std_ulogic_vector(127 downto 0);
-    signal intial_state : std_ulogic_vector(127 downto 0) := (others => '0');
-    signal temp_state_bank : tRoundBank(0 to ROUNDS) := (others => (others => '0'));
-    signal state_bank : tRoundBank(0 to ROUNDS) := (others => (others => '0'));
-    signal key_bank : tRoundBank(0 to ROUNDS) := (others => (others => '0'));
+    type tRoundBank is array (0 to ROUNDS) of std_ulogic_vector(127 downto 0);
+    signal en_d1 : std_ulogic := '0';
+    signal state_bank : tRoundBank := (others => (others => '0'));
+    signal vld_pipe  : std_ulogic_vector(0 to ROUNDS) := (others => '0');
+    signal inital_data : std_ulogic_vector(127 downto 0) := (others => '0');
+    signal key0_reg  : std_ulogic_vector(127 downto 0) := (others => '0');
+    signal key_bank  : tRoundBank := (others => (others => '0'));
+    signal temp_key_bank  : tRoundBank := (others => (others => '0'));
+    signal sbox_out       : tRoundBank := (others => (others => '0'));
+    signal row_out        : tRoundBank := (others => (others => '0'));
+    signal col_out        : tRoundBank := (others => (others => '0'));
+    signal addrk_out      : tRoundBank := (others => (others => '0'));
 
-    signal s_box_out : tRoundBank(0 to ROUNDS) := (others => (others => '0'));
-    signal row_state_out : tRoundBank(0 to ROUNDS) := (others => (others => '0'));
-    signal column_state_out : tRoundBank(0 to ROUNDS) := (others => (others => '0'));
+    function initial_key (key : std_ulogic_vector) return std_ulogic_vector is 
+        variable init_key : std_ulogic_vector(127 downto 0);
+        begin 
+            if(KEY_SIZE = 128) then 
+                init_key := key;
+            elsif(KEY_SIZE = 192) then 
+                init_key := key(191 downto 64);
+            elsif(KEY_SIZE = 256) then 
+                init_key := key(255 downto 128);
+            end if;
+        return init_key;
+    end function;
+    
 
 begin
-
-    -- Round 0: AddRoundKey only
-    ADD_RK_R0 : entity work.addRoundKey(RTL)
-        port map (
-            i_state_in     => intial_state,
-            i_expanded_key => key_bank(0),
-            o_state_out    => temp_state_bank(0)
-        );
-
-    -- Rounds 1 to ROUNDS-1
-    gen_block : for i in 1 to ROUNDS-1 generate
-        NEXT_KEY_G : entity work.next_key(RTL)
+    -- Key generation for all rounds
+    gen_keys: for i in 1 to ROUNDS generate
+        NEXT_KEY_G: entity work.next_key(RTL)
             generic map (
                 key_size => KEY_SIZE,
                 rounds   => ROUNDS
@@ -50,88 +58,100 @@ begin
                 i_prev_key       => key_bank(i-1),
                 i_current_round  => i,
                 o_next_key       => key_bank(i)
+            );
+    end generate;
+
+    -- Round 0
+    ADD_RK_R0: entity work.addRoundKey(RTL)
+        port map (
+            i_state_in     => inital_data,
+            i_expanded_key => key_bank(0),
+            o_state_out    => addrk_out(0)
         );
 
-        SBOX_G : entity work.sbox(RTL)
+    -- Round 0 to ROUNDS-1
+    gen_rounds: for i in 1 to ROUNDS-1 generate
+        SBOX_G: entity work.sbox(RTL)
             port map (
                 i_byte_in  => state_bank(i-1),
-                o_byte_out => s_box_out(i)
-        );
+                o_byte_out => sbox_out(i)
+            );
 
-        SHIFT_ROWS_G : entity work.shift_rows(RTL)
+        SHIFT_ROWS_G: entity work.shift_rows(RTL)
             port map (
-                i_row_state_in  => s_box_out(i),
-                o_row_state_out => row_state_out(i)
-        );
+                i_row_state_in  => sbox_out(i),
+                o_row_state_out => row_out(i)
+            );
 
-        MOVE_COLUMNS_G : entity work.move_columns(RTL)
+        MOVE_COLUMNS_G: entity work.move_columns(RTL)
             port map (
-                i_column_state_in  => row_state_out(i),
-                o_column_state_out => column_state_out(i)
-        );
+                i_column_state_in  => row_out(i),
+                o_column_state_out => col_out(i)
+            );
 
-        ADD_RK_G : entity work.addRoundKey(RTL)
+        ADD_RK_G: entity work.addRoundKey(RTL)
             port map (
-                i_state_in     => column_state_out(i),
+                i_state_in     => col_out(i),
                 i_expanded_key => key_bank(i),
-                o_state_out    => temp_state_bank(i)
-        );
+                o_state_out    => addrk_out(i)
+            );
+    end generate;
 
-    end generate gen_block;
-
-    -- Final round 
-    FINAL_KEY : entity work.next_key(RTL)
-        generic map (
-            key_size => KEY_SIZE,
-            rounds   => ROUNDS
-        )
-        port map (
-            i_prev_key       => key_bank(ROUNDS-1),
-            i_current_round  => ROUNDS,
-            o_next_key       => key_bank(ROUNDS)
-    );
-
-    SBOX_LAST : entity work.sbox(RTL)
+    -- FINAL ROUNDS
+    SBOX_LAST: entity work.sbox(RTL)
         port map (
             i_byte_in  => state_bank(ROUNDS-1),
-            o_byte_out => s_box_out(ROUNDS)
-    );
+            o_byte_out => sbox_out(ROUNDS)
+        );
 
-    SHIFT_ROWS_LAST : entity work.shift_rows(RTL)
+    SHIFT_ROWS_LAST: entity work.shift_rows(RTL)
         port map (
-            i_row_state_in  => s_box_out(ROUNDS),
-            o_row_state_out => row_state_out(ROUNDS)
-    );
+            i_row_state_in  => sbox_out(ROUNDS),
+            o_row_state_out => row_out(ROUNDS)
+        );
 
-    ADD_RK_LAST : entity work.addRoundKey(RTL)
+    ADD_RK_LAST: entity work.addRoundKey(RTL)
         port map (
-            i_state_in     => row_state_out(ROUNDS),
+            i_state_in     => row_out(ROUNDS),
             i_expanded_key => key_bank(ROUNDS),
-            o_state_out    => temp_state_bank(ROUNDS)
-    );
+            o_state_out    => addrk_out(ROUNDS)
+        );
 
-   
-    proc_initial : process(i_clk, i_nrst_async)
+    proc_in: process(i_clk, i_nrst_async)
     begin
         if i_nrst_async = '0' then
-            intial_state <= (others => '0');
-            key_bank(0)  <= (others => '0');
-
+            inital_data <= (others => '0');
+            key0_reg  <= (others => '0');
+            en_d1     <= '0';
+            vld_pipe  <= (others => '0');
+            state_bank <= (others => (others => '0'));
         elsif rising_edge(i_clk) then
+            en_d1 <= i_en_start;
             if i_en_start = '1' then
-                intial_state <= i_data_in;
-                if KEY_SIZE = 128 then
-                    key_bank(0) <= i_cipher_key(127 downto 0);
-                elsif KEY_SIZE = 192 then
-                    key_bank(0) <= i_cipher_key(191 downto 64);
-                elsif KEY_SIZE = 256 then
-                    key_bank(0) <= i_cipher_key(255 downto 128);
-                else
-                    key_bank(0) <= (others => '0');
+                inital_data <= i_data_in(127 downto 0);
+                key_bank(0) <= initial_key(i_cipher_key);
+            end if;
+            -- To prevent unnecessary states or outputed 
+            vld_pipe(0) <= en_d1;
+            for i in 1 to ROUNDS loop
+                vld_pipe(i) <= vld_pipe(i-1);
+            end loop;
+            -- latching the data every clock cycle
+            if en_d1 = '1' then
+                state_bank(0) <= addrk_out(0);
+            end if;
+            -- Stages 1..ROUNDS-1 register full round output
+            for i in 1 to ROUNDS-1 loop
+                if vld_pipe(i-1) = '1' then
+                    state_bank(i) <= addrk_out(i);
+                    --key_bank(i) <= temp_key_bank(i);
                 end if;
-                state_bank <= temp_state_bank;
+            end loop;
+            -- Final stage (ROUNDS) registers last-round output (no MixColumns)
+            if vld_pipe(ROUNDS-1) = '1' then
+                state_bank(ROUNDS) <= addrk_out(ROUNDS);
             end if;
         end if;
-    end process proc_initial;
+    end process;
     o_data_out <= state_bank(ROUNDS);
 end architecture RTL;
