@@ -365,12 +365,12 @@ def compute_totals(rows):
     total_power  = sum(r["Power_W"]  for r in rows)
     return total_energy, total_power
 
-def compute_per_bank(rows):
-    """Group by gen_banks(<n>) if present in signal name."""
+def compute_per_round(rows):
+    """Group by gen_rounds(<n>) if present in signal name."""
     bank_totals = {}
     for r in rows:
-        m = re.search(r"gen_banks\((\d+)\)", r["signal"])
-        key = f"bank{m.group(1)}" if m else "other"
+        m = re.search(r"gen_rounds\((\d+)\)", r["signal"])
+        key = f"round{m.group(1)}" if m else "other"
         bank_totals.setdefault(key, {"Energy_J":0.0, "Power_W":0.0})
         bank_totals[key]["Energy_J"] += r["Energy_J"]
         bank_totals[key]["Power_W"]  += r["Power_W"]
@@ -383,9 +383,9 @@ def print_totals(rows):
     print(f"Total Power  (W) : {P:.6e}")
     print()
 
-def print_per_bank(rows):
-    groups = compute_per_bank(rows)
-    print("====== PER-BANK TOTALS ======")
+def print_per_round(rows):
+    groups = compute_per_round(rows)
+    print("====== PER-ROUND TOTALS ======")
     print("{:<10}  {:>12}  {:>12}".format("Bucket","Power (W)","Energy (J)"))
     for b, agg in sorted(groups.items()):
         print("{:<10}  {:>12.6e}  {:>12.6e}".format(b, agg["Power_W"], agg["Energy_J"]))
@@ -438,7 +438,7 @@ def main():
         print("Round-trip check skipped (pandas not available).")
     
     print_totals(res["rows"])
-    print_per_bank(res["rows"]) 
+    print_per_round(res["rows"]) 
 
     # CSVs
     save_csvs(res["rows"], out_dir, args.vdd, args.ceff)
